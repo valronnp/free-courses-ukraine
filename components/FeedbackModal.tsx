@@ -1,28 +1,14 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-
-declare global {
-  interface Window {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    grecaptcha: any;
-  }
-}
-
-const RAW_SITE_KEY = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY ?? "";
-// Only use the key if it looks real (reCAPTCHA keys start with "6L")
-const SITE_KEY = RAW_SITE_KEY.startsWith("6L") ? RAW_SITE_KEY : "";
+import { useEffect, useState } from "react";
 
 export function FeedbackModal({ onClose }: { onClose: () => void }) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
-  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const captchaContainerRef = useRef<HTMLDivElement>(null);
-  const widgetIdRef = useRef<number | null>(null);
 
   // Close on Escape
   useEffect(() => {
@@ -30,36 +16,6 @@ export function FeedbackModal({ onClose }: { onClose: () => void }) {
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
-
-  // Load & render reCAPTCHA
-  useEffect(() => {
-    if (!SITE_KEY) return;
-
-    const renderWidget = () => {
-      if (!captchaContainerRef.current || widgetIdRef.current !== null) return;
-      widgetIdRef.current = window.grecaptcha.render(captchaContainerRef.current, {
-        sitekey: SITE_KEY,
-        callback: (token: string) => setCaptchaToken(token),
-        "expired-callback": () => setCaptchaToken(null),
-      });
-    };
-
-    if (window.grecaptcha?.render) {
-      window.grecaptcha.ready(renderWidget);
-    } else {
-      const existing = document.querySelector('script[src*="recaptcha/api.js"]');
-      if (existing) {
-        existing.addEventListener("load", renderWidget);
-      } else {
-        const script = document.createElement("script");
-        script.src = "https://www.google.com/recaptcha/api.js?render=explicit";
-        script.async = true;
-        script.defer = true;
-        script.onload = renderWidget;
-        document.head.appendChild(script);
-      }
-    }
-  }, []);
 
   function formatWait(ms: number): string {
     const totalSeconds = Math.ceil(ms / 1000);
@@ -73,14 +29,13 @@ export function FeedbackModal({ onClose }: { onClose: () => void }) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!message.trim()) { setError("Будь ласка, заповніть поле відгуку."); return; }
-    if (SITE_KEY && !captchaToken) { setError("Будь ласка, підтвердьте, що ви не робот."); return; }
     setError("");
     setLoading(true);
     try {
       const res = await fetch("/api/feedback", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, message, captchaToken }),
+        body: JSON.stringify({ name, email, message }),
       });
       if (res.status === 429) {
         const data = await res.json();
@@ -106,9 +61,7 @@ export function FeedbackModal({ onClose }: { onClose: () => void }) {
       />
 
       {/* Dialog */}
-      <div
-        className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none"
-      >
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
         <div
           role="dialog"
           aria-modal="true"
@@ -194,21 +147,12 @@ export function FeedbackModal({ onClose }: { onClose: () => void }) {
                 />
               </div>
 
-              {/* reCAPTCHA */}
-              {SITE_KEY ? (
-                <div ref={captchaContainerRef} className="self-start" />
-              ) : process.env.NODE_ENV === "development" ? (
-                <p className="text-xs text-muted bg-border/30 rounded-lg px-3 py-2">
-                  reCAPTCHA: додайте <code className="font-mono">NEXT_PUBLIC_RECAPTCHA_SITE_KEY</code> до <code className="font-mono">.env.local</code>
-                </p>
-              ) : null}
-
               {error && <p className="text-xs text-red-500">{error}</p>}
 
               <button
                 type="submit"
+                disabled={loading}
                 className="mt-1 w-full py-2.5 rounded-xl bg-accent text-white text-sm font-medium hover:bg-accent/90 transition-colors disabled:opacity-50"
-                disabled={loading || (SITE_KEY ? !captchaToken : false)}
               >
                 {loading ? "Надсилання…" : "Надіслати"}
               </button>

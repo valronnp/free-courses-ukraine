@@ -73,6 +73,7 @@ const levelDots: Record<string, number> = {
 export function CourseCard({ course }: { course: Course }) {
   const colorClass = categoryColors[course.category] || "bg-gray-50 text-gray-700 border-gray-100";
   const dots = levelDots[course.level] || 1;
+  const hours = toHours(course.duration);
 
   return (
     <a href={course.url} target="_blank" rel="noopener noreferrer" className="group block h-full">
@@ -123,7 +124,7 @@ export function CourseCard({ course }: { course: Course }) {
 
           {/* Footer meta */}
           <div className="pt-3 border-t border-border/50 flex items-center justify-between">
-            {(() => { const h = toHours(course.duration); return h && <span className="text-xs text-muted">{h}</span>; })()}
+            {hours && <span className="text-xs text-muted">{hours}</span>}
             <div className="flex items-center gap-1.5">
               <span className="flex items-center gap-0.5">
                 {[1, 2, 3].map((d) => (

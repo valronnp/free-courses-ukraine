@@ -57,7 +57,7 @@ export async function POST(req: Request) {
     );
   }
 
-  const { name, email, message, captchaToken } = body as Record<string, unknown>;
+  const { name, email, message } = body as Record<string, unknown>;
 
   const safeName = sanitize(name).slice(0, MAX_NAME);
   const safeEmail = sanitize(email).slice(0, MAX_EMAIL);
@@ -65,23 +65,6 @@ export async function POST(req: Request) {
 
   if (!safeMessage) {
     return NextResponse.json({ error: "Message is required" }, { status: 400 });
-  }
-
-  // Verify reCAPTCHA token only if a real secret key is configured (starts with "6L")
-  const secretKey = process.env.RECAPTCHA_SECRET_KEY ?? "";
-  if (secretKey.startsWith("6L")) {
-    if (!captchaToken) {
-      return NextResponse.json({ error: "reCAPTCHA required" }, { status: 400 });
-    }
-    const verifyRes = await fetch("https://www.google.com/recaptcha/api/siteverify", {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: `secret=${secretKey}&response=${captchaToken}`,
-    });
-    const verifyData = await verifyRes.json();
-    if (!verifyData.success) {
-      return NextResponse.json({ error: "reCAPTCHA verification failed" }, { status: 400 });
-    }
   }
 
   const transporter = nodemailer.createTransport({

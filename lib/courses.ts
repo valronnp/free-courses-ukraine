@@ -564,5 +564,11 @@ export function searchCourses(query: string, filters: {
     });
   }
 
-  return results.sort((a, b) => b.rating - a.rating);
+  return results.sort((a, b) => {
+    if (b.rating !== a.rating) return b.rating - a.rating;
+    // At equal ratings, courses with real duration come before self-paced
+    const aHasHours = toHoursNum(a.duration) !== null ? 1 : 0;
+    const bHasHours = toHoursNum(b.duration) !== null ? 1 : 0;
+    return bHasHours - aHasHours;
+  });
 }

@@ -1,0 +1,44 @@
+# dependencies
+/node_modules
+/.pnp
+.pnp.js
+.yarn/install-state.gz
+
+# testing
+/coverage
+
+# next.js
+/.next/
+/out/
+
+# production
+/build
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# local env files
+.env*.local
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# scraper — Crawlee runtime storage (created during scrape runs)
+/storage/
+
+# Claude Code settings
+.claude/
+
+# scraper output — commit data/scraped-courses.json only after review
+# Remove the next line if you want to track scraped data in git
+# data/scraped-courses.json

@@ -139,7 +139,7 @@ export default function Home() {
           <div className="max-w-2xl mx-auto">
             <div className="grid grid-cols-3 gap-px bg-border rounded-2xl overflow-hidden border border-border">
               {[
-                { value: "305", label: "курсів" },
+                { value: "302", label: "курси" },
                 { value: "20", label: "категорій" },
                 { value: "100%", label: "безкоштовні" },
               ].map((s) => (

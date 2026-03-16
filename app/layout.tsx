@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
+import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 import { Footer } from "@/components/Footer";
 
@@ -33,6 +34,7 @@ export default function RootLayout({
           <Suspense fallback={null}>{children}</Suspense>
         </main>
         <Footer />
+        <Analytics />
       </body>
     </html>
   );
